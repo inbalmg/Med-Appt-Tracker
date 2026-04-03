@@ -273,6 +273,7 @@ const Index = () => {
           <TabsContent value="journal">
             <CalendarTab
               appointments={appointments}
+              selectedDate={selectedDate}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setRangeStart(addDays(date, -2));

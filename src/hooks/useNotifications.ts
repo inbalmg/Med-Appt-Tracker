@@ -120,7 +120,7 @@ export function useNotifications() {
         });
       }
       // Clear pending reminders when bell is turned off
-      await supabase.from('pending_reminders' as any).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('pending_reminders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       setIsSubscribed(false);
     } catch (error) {
       console.error('Unsubscribe error:', error);
@@ -214,8 +214,8 @@ export function useNotifications() {
       // Upsert all reminders (ignore conflicts on existing keys)
       if (reminders.length > 0) {
         const { error } = await supabase
-          .from('pending_reminders' as any)
-          .upsert(reminders as any, { onConflict: 'notification_key', ignoreDuplicates: true });
+          .from('pending_reminders')
+          .upsert(reminders, { onConflict: 'notification_key', ignoreDuplicates: true });
         if (error) console.error('Sync reminders error:', error);
       }
     } catch (error) {

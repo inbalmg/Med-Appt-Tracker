@@ -1,13 +1,47 @@
-#
-# Netlify configuration for Vite + React + Supabase SPA
-#
+# Netlify — Vite SPA + PWA hardening (headers, cache, SW scope)
+# Build output: dist/
 
 [build]
   command = "npm run build"
   publish = "dist"
 
+# SPA: all routes → index.html (200, not 302 — client-side router)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
+# Service worker: always revalidate so updates roll out quickly
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+# Web app manifest
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+# Vite hashed assets — long cache (filenames change on each build)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# HTML shell — avoid stale app shell after deploy
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Security baseline (safe defaults for a health-style SPA)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"

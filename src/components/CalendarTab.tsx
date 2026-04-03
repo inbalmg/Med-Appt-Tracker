@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, getDay, addMonths, subMonths, addWeeks, subWeeks, startOfDay } from 'date-fns';
 import { ChevronRight, ChevronLeft, Clock, MapPin, CalendarDays } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import type { Appointment } from '@/types';
 
 interface CalendarTabProps {
   appointments: Appointment[];
+  selectedDate: Date;
   onSelectDate: (date: Date) => void;
   onAppointmentClick?: (appointment: Appointment) => void;
 }
@@ -16,10 +17,14 @@ type ViewMode = 'monthly' | 'weekly';
 const MONTH_NAMES_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 const DAY_NAMES_HE = ["יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", 'שבת'];
 
-const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, onSelectDate, onAppointmentClick }) => {
+const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, selectedDate, onSelectDate, onAppointmentClick }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [currentDate, setCurrentDate] = useState(selectedDate);
+  // Keep calendar view in sync with the global selected date
+  useEffect(() => {
+    setCurrentDate(selectedDate);
+  }, [selectedDate]);
+
   // Use all appointments directly
   const filteredAppointments = appointments;
 
@@ -55,23 +60,20 @@ const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, onSelectDate, o
   }, [currentDate, viewMode]);
 
   const navigatePrev = () => {
-    setSelectedDay(null);
     if (viewMode === 'monthly') setCurrentDate(subMonths(currentDate, 1));
     else setCurrentDate(subWeeks(currentDate, 1));
   };
 
   const navigateNext = () => {
-    setSelectedDay(null);
     if (viewMode === 'monthly') setCurrentDate(addMonths(currentDate, 1));
     else setCurrentDate(addWeeks(currentDate, 1));
   };
 
   const handleDayClick = (day: Date) => {
-    setSelectedDay(day);
     onSelectDate(day);
   };
 
-  const selectedDayAppointments = selectedDay ? getAppointmentsForDate(selectedDay) : [];
+  const selectedDayAppointments = getAppointmentsForDate(selectedDate);
 
   return (
     <div dir="rtl" className="space-y-3">
@@ -131,7 +133,7 @@ const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, onSelectDate, o
             const dayAppts = getAppointmentsForDate(day);
             const isCurrentMonth = viewMode === 'monthly' ? isSameMonth(day, currentDate) : true;
             const isToday = isSameDay(day, new Date());
-            const isSelected = selectedDay && isSameDay(day, selectedDay);
+            const isSelected = isSameDay(day, selectedDate);
             const dayOfWeek = getDay(day); // 0=Sun, 6=Sat
             const isSaturday = dayOfWeek === 6;
             const isFriday = dayOfWeek === 5;
@@ -171,11 +173,10 @@ const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, onSelectDate, o
       </div>
 
       {/* Daily View (when a day is selected) */}
-      {selectedDay && (
-        <div className="space-y-2">
+      <div className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 text-primary" />
-            תורים ליום {format(selectedDay, 'dd/MM/yyyy')}
+            תורים ליום {format(selectedDate, 'dd/MM/yyyy')}
             {selectedDayAppointments.length > 0 && (
               <Badge variant="secondary" className="text-xs">{selectedDayAppointments.length}</Badge>
             )}
@@ -216,7 +217,6 @@ const CalendarTab: React.FC<CalendarTabProps> = ({ appointments, onSelectDate, o
             </div>
           )}
         </div>
-      )}
     </div>
   );
 };
