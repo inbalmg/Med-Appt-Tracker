@@ -13,9 +13,7 @@ const CACHE_RUNTIME = `med-appt-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
   "/",
   "/index.html",
-  "/manifest.webmanifest",
-  "/placeholder.svg",
-  "/icon-512.png",
+  "/manifest.webmanifest", 
 ];
 
 function isSameOrigin(url) {

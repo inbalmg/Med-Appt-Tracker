@@ -45,7 +45,14 @@ export function useSupabaseData() {
 
   // Fetch all data
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setMedications([]);
+      setAppointments([]);
+      setCompletions({});
+      setArrivals({});
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     const [medsRes, apptsRes, compsRes, arrsRes] = await Promise.all([

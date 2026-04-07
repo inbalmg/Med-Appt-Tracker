@@ -16,10 +16,11 @@ import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import type { Medication, Appointment, MedicationInstance } from '@/types';
 import InstallBanner from '@/components/InstallBanner';
+import { Navigate } from 'react-router-dom';
 
 
 const Index = () => {
-  const { signOut } = useAuth();
+  const { signOut, user, loading: authLoading } = useAuth();
   const {
     medications, appointments, completions, arrivals, loading,
     saveMedication, saveAppointment, deleteMedication, deleteAppointment,
@@ -75,6 +76,12 @@ const Index = () => {
 
   const shiftRange = useCallback((direction: 'forward' | 'backward') => {
     setRangeStart(prev => addDays(prev, direction === 'forward' ? 7 : -7));
+  }, []);
+
+  // Single source of truth for date selection (carousel + calendar)
+  const handleDateSelect = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setRangeStart(addDays(date, -2));
   }, []);
 
   // Filter medications for selected date
@@ -138,7 +145,12 @@ const Index = () => {
     return now >= apptTime;
   };
 
-  if (loading) {
+  // Auth gate: redirect immediately when auth check is complete and no user exists
+  if (!authLoading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -151,13 +163,12 @@ const Index = () => {
       {/* Header */}
       <DateStrip
         selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
+        onSelectDate={handleDateSelect}
         rangeStart={rangeStart}
         onShiftRange={shiftRange}
         onGoToToday={() => {
           const now = new Date();
-          setSelectedDate(now);
-          setRangeStart(addDays(now, -2));
+          handleDateSelect(now);
         }}
         showTodayButton={!isToday(selectedDate) || rangeStart.toDateString() !== addDays(new Date(), -2).toDateString()}
       />
@@ -274,10 +285,7 @@ const Index = () => {
             <CalendarTab
               appointments={appointments}
               selectedDate={selectedDate}
-              onSelectDate={(date) => {
-                setSelectedDate(date);
-                setRangeStart(addDays(date, -2));
-              }}
+              onSelectDate={handleDateSelect}
               onAppointmentClick={(appt) => setActionTarget({ type: 'appt', appt })}
             />
           </TabsContent>

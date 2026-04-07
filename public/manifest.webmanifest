@@ -1,25 +1,20 @@
 {
   "name": "ניהול תרופות ותורים",
-  "short_name": "תרופות ותורים",
-  "description": "אפליקציה לניהול תרופות ותורים רפואיים",
+  "short_name": "MedApp",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "background_color": "#f0f5f4",
-  "theme_color": "#339e8f",
-  "lang": "he",
-  "dir": "rtl",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
   "icons": [
     {
-      "src": "/icon-512.png",
+      "src": "/pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ]
 }
-
