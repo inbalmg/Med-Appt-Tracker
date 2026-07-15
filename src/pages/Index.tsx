@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { format, addDays, isToday, isTomorrow, parseISO, getDay, startOfDay } from 'date-fns';
-import { Plus, Pill, Stethoscope, CalendarDays, Bell, BellOff, BookOpen, LogOut, Upload, Download, BellRing } from 'lucide-react';
+import { Plus, Pill, Stethoscope, CalendarDays, Bell, BellOff, BookOpen, LogOut, Upload, Download, BellRing, ChartColumn } from 'lucide-react';
 import DateStrip from '@/components/DateStrip';
 import MedicationCard from '@/components/MedicationCard';
 import AppointmentCard from '@/components/AppointmentCard';
 import AddMedicationForm from '@/components/AddMedicationForm';
 import AddAppointmentForm from '@/components/AddAppointmentForm';
 import CalendarTab from '@/components/CalendarTab';
+import StatsTab from '@/components/StatsTab';
 import ActionSheet from '@/components/ActionSheet';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ImportDataDialog from '@/components/ImportDataDialog';
@@ -14,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
+import { getMedInstancesForDate } from '@/lib/schedule';
 import type { Medication, Appointment, MedicationInstance } from '@/types';
 import InstallBanner from '@/components/InstallBanner';
 import { Navigate } from 'react-router-dom';
@@ -85,37 +87,10 @@ const Index = () => {
   }, []);
 
   // Filter medications for selected date
-  const dailyMedInstances = useMemo((): MedicationInstance[] => {
-    const instances: MedicationInstance[] = [];
-    const selDate = selectedDate;
-    const selDateStr = format(selDate, 'yyyy-MM-dd');
-
-    medications.forEach(med => {
-      if (selDateStr < med.startDate) return;
-      if (med.endDate && selDateStr > med.endDate) return;
-
-      let active = false;
-      if (med.frequency === 'daily') {
-        active = true;
-      } else if (med.frequency === 'weekly') {
-        active = getDay(selDate) === med.weekDay;
-      } else if (med.frequency === 'once') {
-        active = selDateStr === med.startDate;
-      } else if (med.frequency === 'every_x_days' && med.intervalDays) {
-        const start = startOfDay(parseISO(med.startDate));
-        const diff = Math.round((startOfDay(selDate).getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-        active = diff >= 0 && diff % med.intervalDays === 0;
-      }
-
-      if (active) {
-        med.times.forEach(time => {
-          instances.push({ medicationId: med.id, time, medication: med });
-        });
-      }
-    });
-
-    return instances.sort((a, b) => a.time.localeCompare(b.time));
-  }, [medications, selectedDate]);
+  const dailyMedInstances = useMemo(
+    (): MedicationInstance[] => getMedInstancesForDate(medications, selectedDate),
+    [medications, selectedDate]
+  );
 
   // Filter appointments for selected date
   const dailyAppointments = useMemo(() => {
@@ -258,7 +233,7 @@ const Index = () => {
 
 
         <Tabs defaultValue="journal" dir="rtl" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-3">
+          <TabsList className="w-full grid grid-cols-4 mb-3">
             {/* Right (RTL start) - Journal */}
             <TabsTrigger value="journal" className="flex items-center gap-1.5 data-[state=active]:text-medical data-[state=active]:shadow-sm">
               <BookOpen className="w-4 h-4" />
@@ -278,6 +253,11 @@ const Index = () => {
             <TabsTrigger value="medications" className="flex items-center gap-1.5 data-[state=active]:text-success data-[state=active]:shadow-sm">
               <Pill className="w-4 h-4" />
               תרופות
+            </TabsTrigger>
+            {/* Far left - Adherence stats */}
+            <TabsTrigger value="stats" className="flex items-center gap-1.5 data-[state=active]:text-warning data-[state=active]:shadow-sm">
+              <ChartColumn className="w-4 h-4" />
+              מעקב
             </TabsTrigger>
           </TabsList>
 
@@ -338,6 +318,10 @@ const Index = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <StatsTab medications={medications} completions={completions} />
           </TabsContent>
         </Tabs>
       </div>
