@@ -10,13 +10,13 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
       appointments: {
         Row: {
-          created_at: string
+          created_at: string | null
           date: string
           doctor: string
           id: string
@@ -28,7 +28,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           date: string
           doctor?: string
           id?: string
@@ -36,11 +36,11 @@ export type Database = {
           notes?: string
           reminder_minutes?: number
           time: string
-          type: string
+          type?: string
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           date?: string
           doctor?: string
           id?: string
@@ -57,7 +57,7 @@ export type Database = {
         Row: {
           appointment_id: string
           arrived: boolean
-          created_at: string
+          created_at: string | null
           date: string
           id: string
           user_id: string
@@ -65,7 +65,7 @@ export type Database = {
         Insert: {
           appointment_id: string
           arrived?: boolean
-          created_at?: string
+          created_at?: string | null
           date: string
           id?: string
           user_id: string
@@ -73,7 +73,7 @@ export type Database = {
         Update: {
           appointment_id?: string
           arrived?: boolean
-          created_at?: string
+          created_at?: string | null
           date?: string
           id?: string
           user_id?: string
@@ -91,7 +91,7 @@ export type Database = {
       completions: {
         Row: {
           completed: boolean
-          created_at: string
+          created_at: string | null
           date: string
           id: string
           medication_id: string
@@ -100,7 +100,7 @@ export type Database = {
         }
         Insert: {
           completed?: boolean
-          created_at?: string
+          created_at?: string | null
           date: string
           id?: string
           medication_id: string
@@ -109,7 +109,7 @@ export type Database = {
         }
         Update: {
           completed?: boolean
-          created_at?: string
+          created_at?: string | null
           date?: string
           id?: string
           medication_id?: string
@@ -128,7 +128,7 @@ export type Database = {
       }
       medications: {
         Row: {
-          created_at: string
+          created_at: string | null
           dosage: string | null
           end_date: string | null
           frequency: string
@@ -144,7 +144,7 @@ export type Database = {
           week_day: number | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           dosage?: string | null
           end_date?: string | null
           frequency?: string
@@ -160,7 +160,7 @@ export type Database = {
           week_day?: number | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           dosage?: string | null
           end_date?: string | null
           frequency?: string
@@ -181,24 +181,24 @@ export type Database = {
         Row: {
           id: string
           notification_key: string
-          sent_at: string
+          sent_at: string | null
         }
         Insert: {
           id?: string
           notification_key: string
-          sent_at?: string
+          sent_at?: string | null
         }
         Update: {
           id?: string
           notification_key?: string
-          sent_at?: string
+          sent_at?: string | null
         }
         Relationships: []
       }
       pending_reminders: {
         Row: {
           body: string
-          created_at: string
+          created_at: string | null
           id: string
           notification_key: string
           sent: boolean
@@ -206,10 +206,11 @@ export type Database = {
           title: string
           trigger_at: string
           type: string
+          user_id: string
         }
         Insert: {
           body: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           notification_key: string
           sent?: boolean
@@ -217,10 +218,11 @@ export type Database = {
           title: string
           trigger_at: string
           type?: string
+          user_id: string
         }
         Update: {
           body?: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           notification_key?: string
           sent?: boolean
@@ -228,30 +230,34 @@ export type Database = {
           title?: string
           trigger_at?: string
           type?: string
+          user_id?: string
         }
         Relationships: []
       }
       push_subscriptions: {
         Row: {
           auth: string
-          created_at: string
+          created_at: string | null
           endpoint: string
           id: string
           p256dh: string
+          user_id: string
         }
         Insert: {
           auth: string
-          created_at?: string
+          created_at?: string | null
           endpoint: string
           id?: string
           p256dh: string
+          user_id: string
         }
         Update: {
           auth?: string
-          created_at?: string
+          created_at?: string | null
           endpoint?: string
           id?: string
           p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
