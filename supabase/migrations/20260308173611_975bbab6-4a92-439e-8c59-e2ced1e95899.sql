@@ -1,16 +1,26 @@
+-- Schedules the reminder pipeline: every minute, pg_cron POSTs to the
+-- send-notifications edge function, which delivers any pending_reminders whose
+-- trigger_at has passed.
+--
+-- This originally hardcoded a different project's URL and an anon JWT in the
+-- Authorization header. Both are gone: the function runs with verify_jwt = false
+-- (supabase/config.toml), so no auth header is needed and no key belongs in a
+-- migration. The URL is this project's.
 
--- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
--- Schedule cron job to call send-notifications every minute
+-- Idempotent: drop any prior definition before (re)creating.
+SELECT cron.unschedule('check-reminders')
+WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'check-reminders');
+
 SELECT cron.schedule(
   'check-reminders',
   '* * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://mjdcjlmgtcafvhhyuqmq.supabase.co/functions/v1/send-notifications',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qZGNqbG1ndGNhZnZoaHl1cW1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDU5MDksImV4cCI6MjA4ODIyMTkwOX0.2EVv-PF5SVrg9sPrJz6zHHS9VaWV36onNAjeVsSzWfU"}'::jsonb,
+    url := 'https://tuvoumlrewbedlnloznx.supabase.co/functions/v1/send-notifications',
+    headers := '{"Content-Type": "application/json"}'::jsonb,
     body := '{"source":"cron"}'::jsonb
   ) as request_id;
   $$
