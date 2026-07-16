@@ -21,6 +21,9 @@ import type { Medication, Appointment, MedicationInstance } from '@/types';
 import InstallBanner from '@/components/InstallBanner';
 import { Navigate } from 'react-router-dom';
 
+const MONTH_NAMES_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+const DAY_NAMES_HE = ["יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", 'שבת'];
+
 
 const Index = () => {
   const { signOut, user, loading: authLoading } = useAuth();
@@ -153,17 +156,19 @@ const Index = () => {
       {/* Content */}
       <div className="px-4 mt-5 min-h-[calc(100vh-200px)]">
         <h1 className="text-lg font-bold text-foreground flex items-center gap-2 mb-3">
-          <CalendarDays className="w-5 h-5 text-primary" />
+          <CalendarDays className="w-5 h-5 text-primary shrink-0" />
           {(() => {
-            const MONTH_NAMES_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-            const DAY_NAMES_HE = ["יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", 'שבת'];
-            const day = selectedDate.getDate();
-            const monthName = MONTH_NAMES_HE[selectedDate.getMonth()];
-            const datePart = `${day} ב${monthName}`;
             const sel = startOfDay(selectedDate);
-            if (isToday(sel)) return `היום, ${datePart}`;
-            if (isTomorrow(sel)) return `מחר, ${datePart}`;
-            return `${DAY_NAMES_HE[sel.getDay()]}, ${datePart}`;
+            const dayLabel = isToday(sel) ? 'היום'
+              : isTomorrow(sel) ? 'מחר'
+              : DAY_NAMES_HE[sel.getDay()];
+            const datePart = `${selectedDate.getDate()} ב${MONTH_NAMES_HE[selectedDate.getMonth()]}`;
+            return (
+              <span className="flex flex-col leading-tight">
+                <span>{dayLabel}</span>
+                <span className="text-sm font-normal text-muted-foreground">{datePart}</span>
+              </span>
+            );
           })()}
           <span className="text-sm font-normal text-muted-foreground ms-auto flex items-center gap-2">
             <button
