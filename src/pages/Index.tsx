@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
+import { useHideOnScroll } from '@/hooks/useHideOnScroll';
 import { getMedInstancesForDate } from '@/lib/schedule';
 import type { Medication, Appointment, MedicationInstance } from '@/types';
 import InstallBanner from '@/components/InstallBanner';
@@ -41,6 +42,7 @@ const Index = () => {
   const [showImport, setShowImport] = useState(false);
 
   const { isSubscribed, isLoading, subscribe, unsubscribe, startNotificationChecker, debouncedSync, sendTestNotification } = useNotifications();
+  const fabVisible = useHideOnScroll();
   
 
   // Start notification checker when subscribed
@@ -326,8 +328,15 @@ const Index = () => {
         </Tabs>
       </div>
 
-      {/* FAB */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+      {/* FAB — hidden while scrolling down so it doesn't sit on top of the
+          content being read; always shown while its menu is open. */}
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-200 ${
+          fabVisible || showAddMenu
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-20 pointer-events-none'
+        }`}
+      >
         {showAddMenu && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
             <button
